@@ -89,7 +89,7 @@
 						<p>{{ task?.description }}</p> 
 						@if (task.dueAt) {
 								<p class="task-deadline">
-									Határidő: <time [attr.datetime]="task.dueAt">{{ displayDeadline(task.dueAt)}}</time>
+									Határidő: <time [attr.datetime]="task.dueAt">{{ task.dueAt | date:'yyyy. MM. dd.' }}</time>
 								</p>
 							@let warning = deadlineState(task.dueAt, task.status, now());
 							@if (warning === 'soon') {

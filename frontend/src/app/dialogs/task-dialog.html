@@ -1,6 +1,8 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
 	<label for="title">Cím</label>
 	<input id="title" formControlName="title" required placeholder="Feladat címe" autofocus>
+	<ng-container [ngTemplateOutlet]="fieldError"
+		[ngTemplateOutletContext]="{ $implicit: form.controls.title, message: 'Add meg a feladat címét.' }" />
 	<label for="description">Leírás</label>
 	<textarea id="description" formControlName="description" rows="3" placeholder="További részletek"></textarea>
 	<label for="task-status">Státusz</label>
@@ -10,11 +12,13 @@
 		}
 	</select>
 	<label for="due-date">Határidő</label>
-	<p-datepicker inputId="due-date" formControlName="dueDate" (onInput)="changeDateInput($event)" dataType="string"
+	<p-datepicker inputId="due-date" formControlName="dueDate"
 		dateFormat="yy. mm. dd." placeholder="ÉÉÉÉ. HH. NN." [showIcon]="true" [keepInvalid]="true"
 		[firstDayOfWeek]="1" appendTo="body" panelStyleClass="deadline-calendar" />
-	@if (validationError || data.error()) {
-		<p class="error">{{ validationError || data.error() }}</p>
+	<ng-container [ngTemplateOutlet]="fieldError"
+		[ngTemplateOutletContext]="{ $implicit: form.controls.dueDate, message: 'Add meg a dátumot ÉÉÉÉ. HH. NN. formátumban.' }" />
+	@if (data.error()) {
+		<p class="error">{{ data.error() }}</p>
 	}
 	<div class="actions">
 		<button type="submit">
@@ -23,3 +27,9 @@
 		<button type="button" class="secondary" (click)="close()">Mégse</button>
 	</div>
 </form>
+
+<ng-template #fieldError let-control let-message="message">
+	@if (control.touched && control.invalid) {
+		<p class="error">{{ message }}</p>
+	}
+</ng-template>

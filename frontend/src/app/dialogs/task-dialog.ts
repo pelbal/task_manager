@@ -1,8 +1,8 @@
+import { formatDate, NgTemplateOutlet } from '@angular/common';
 import { Component, inject, Signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { displayDeadline, parseDateInput } from '../deadline';
 import { TASK_STATUSES, Task, TaskStatus } from '../task';
 
 export interface TaskDialogData {
@@ -17,7 +17,7 @@ export interface TaskSubmission {
 
 @Component({
 	selector: 'app-task-dialog',
-	imports: [ReactiveFormsModule, DatePickerModule],
+	imports: [ReactiveFormsModule, DatePickerModule, NgTemplateOutlet],
 	templateUrl: './task-dialog.html',
 	styleUrl: './task-dialog.scss',
 })
@@ -27,12 +27,17 @@ export class TaskDialog {
 	protected readonly statuses = TASK_STATUSES;
 
 	protected readonly form = new FormGroup({
-		title: new FormControl('', { nonNullable: true }),
+		title: new FormControl('', {
+			nonNullable: true,
+			validators: [Validators.required, Validators.pattern(/\S/)],
+		}),
 		description: new FormControl('', { nonNullable: true }),
 		status: new FormControl<TaskStatus>('TODO', { nonNullable: true }),
-		dueDate: new FormControl<string | null>(''),
+		dueDate: new FormControl<Date | string | null>(null, {
+			validators: ({ value }) => !value || (value instanceof Date && !Number.isNaN(value.getTime()))
+				? null : { date: true },
+		}),
 	});
-	protected validationError = '';
 
 	constructor() {
 		const data = inject<DynamicDialogConfig<TaskDialogData>>(DynamicDialogConfig).data;
@@ -45,7 +50,7 @@ export class TaskDialog {
 				title: task.title,
 				description: task.description,
 				status: task.status,
-				dueDate: task.dueAt ? displayDeadline(task.dueAt) : '',
+				dueDate: task.dueAt ? new Date(`${task.dueAt}T00:00:00`) : null,
 			});
 		}
 	}
@@ -54,30 +59,14 @@ export class TaskDialog {
 		this.dialog.close();
 	}
 
-	protected changeDateInput(event: Event): void {
-		if (event.target instanceof HTMLInputElement) {
-			this.form.controls.dueDate.setValue(event.target.value, { emitModelToViewChange: false });
-		}
-	}
-
 	protected submit(): void {
-		const values = this.form.getRawValue();
-		const title = values.title.trim();
-		if (!title) {
-			this.validationError = 'Add meg a feladat címét.';
+		if (this.form.invalid) {
+			this.form.markAllAsTouched();
 			return;
 		}
-		let dueAt: string | null = null;
-		const dateInput = (values.dueDate ?? '').trim();
-		if (dateInput) {
-			const date = parseDateInput(dateInput);
-			if (!date) {
-				this.validationError = 'Add meg a dátumot ÉÉÉÉ. HH. NN. formátumban.';
-				return;
-			}
-			dueAt = date;
-		}
-		this.validationError = '';
+		const values = this.form.getRawValue();
+		const title = values.title.trim();
+		const dueAt = values.dueDate ? formatDate(values.dueDate, 'yyyy-MM-dd', 'en-US') : null;
 		const submission: TaskSubmission = {
 			editing: this.data.editing,
 			task: { title, description: values.description.trim(), status: values.status, dueAt },

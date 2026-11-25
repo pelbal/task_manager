@@ -34,7 +34,6 @@ export class Server {
 				currentSocket.onerror = () => currentSocket.close();
 				currentSocket.onclose = () => {
 					if (subscriber.closed) return;
-					// avoid rapid reconnection attempts while the server is unavailable
 					reconnectTimer = setTimeout(connect, 2000);
 				};
 			};

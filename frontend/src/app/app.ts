@@ -1,9 +1,9 @@
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Subscription } from 'rxjs';
-import { deadlineState, displayDeadline } from './deadline';
+import { deadlineState } from './deadline';
 import { TaskDialog, TaskDialogData, TaskSubmission } from './dialogs/task-dialog';
 import { Server } from './server';
 import { TASK_STATUSES, Task, TaskStatus } from './task';
@@ -13,7 +13,7 @@ const DEADLINE_REFRESH_INTERVAL_MS = 60_000;
 
 @Component({
 	selector: 'app-root',
-	imports: [DecimalPipe],
+	imports: [DatePipe, DecimalPipe],
 	providers: [DialogService],
 	templateUrl: './app.html',
 	styleUrl: './app.scss',
@@ -24,7 +24,6 @@ export class App implements OnInit, OnDestroy {
 	protected readonly selectedStatus = signal<TaskStatus | null>(null);
 	protected readonly selectedDeadline = signal<DeadlineWarning | null>(null);
 	protected readonly now = signal(Date.now());
-	protected readonly displayDeadline = displayDeadline;
 	protected readonly deadlineState = deadlineState;
 	protected readonly error = signal('');
 	protected readonly busy = signal(false);
@@ -60,7 +59,6 @@ export class App implements OnInit, OnDestroy {
 			const count = this.tasks().filter((task) => task.status === status).length;
 			return { status, count, percentage: this.tasks().length ? count / this.tasks().length * 100 : 0 };
 		});
-		// only visible segments need rounded ends
 		const nonEmpty = summary.filter((item) => item.count > 0);
 		return summary.map((item) => ({
 			...item,
