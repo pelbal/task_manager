@@ -1,0 +1,21 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--p-surface-50);
+	color: var(--p-text-color);
+	font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.deadline-calendar {
+	max-height: min(320px, 40dvh);
+	max-width: 100%;
+	overflow: auto;
+}
+
+label {
+	font-size: 14px;
+	font-weight: 600;
+}

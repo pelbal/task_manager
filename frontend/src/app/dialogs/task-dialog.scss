@@ -1,0 +1,49 @@
+@use '../shared/shared-controls.scss' as shared;
+@include shared.controls;
+
+:host {
+	display: contents;
+}
+
+.optional {
+	color: var(--p-text-muted-color);
+}
+
+form {
+	display: grid;
+	gap: 10px;
+}
+
+p-datepicker {
+	width: 100%;
+}
+
+input:not([type="checkbox"]),
+textarea,
+form select {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--p-form-field-border-color);
+	border-radius: 8px;
+	font: inherit;
+	background: var(--p-form-field-background);
+}
+
+textarea {
+	resize: vertical;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+	outline: 2px solid var(--p-indigo-400);
+	outline-offset: 1px;
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+}

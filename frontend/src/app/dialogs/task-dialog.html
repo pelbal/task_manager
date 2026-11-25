@@ -1,0 +1,25 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+	<label for="title">Cím</label>
+	<input id="title" formControlName="title" required placeholder="Feladat címe" autofocus>
+	<label for="description">Leírás</label>
+	<textarea id="description" formControlName="description" rows="3" placeholder="További részletek"></textarea>
+	<label for="task-status">Státusz</label>
+	<select id="task-status" formControlName="status">
+		@for (status of statuses; track status) {
+		<option [value]="status">{{ status }}</option>
+		}
+	</select>
+	<label for="due-date">Határidő</label>
+	<p-datepicker inputId="due-date" formControlName="dueDate" (onInput)="changeDateInput($event)" dataType="string"
+		dateFormat="yy. mm. dd." placeholder="ÉÉÉÉ. HH. NN." [showIcon]="true" [keepInvalid]="true"
+		[firstDayOfWeek]="1" appendTo="body" panelStyleClass="deadline-calendar" />
+	@if (validationError || data.error()) {
+		<p class="error">{{ validationError || data.error() }}</p>
+	}
+	<div class="actions">
+		<button type="submit">
+			{{ data.editing ? 'Módosítás mentése' : 'Feladat hozzáadása' }}
+		</button>
+		<button type="button" class="secondary" (click)="close()">Mégse</button>
+	</div>
+</form>

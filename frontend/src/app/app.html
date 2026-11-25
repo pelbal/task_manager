@@ -1,0 +1,113 @@
+<div class="container">
+	<div>
+		<div>
+			<p class="eyebrow">TASK MANAGER</p>
+			<h1>Feladataim</h1>
+		</div>
+		<div class="deadline-filters">
+			<button type="button" class="deadline-filter soon" [class.selected]="selectedDeadline() === 'soon'"
+				(click)="filterByDeadline('soon')"><i class="pi pi-clock"></i> Hamarosan lejár: {{
+				deadlineSummary().soon }}</button>
+			<button type="button" class="deadline-filter overdue" [class.selected]="selectedDeadline() === 'overdue'"
+				(click)="filterByDeadline('overdue')">
+				<i class="pi pi-exclamation-triangle"></i>
+				Lejárt: {{deadlineSummary().overdue }}
+			</button>
+		</div>
+	</div>
+
+	<section class="summary">
+		<h2 id="summary-title">Feladatok megoszlása</h2>
+		<div class="summary-bar">
+			@for (item of statusSummary(); track item.status) {
+				<button type="button" class="summary-segment"
+					[class.todo]="item.status === 'TODO'"
+					[class.in-progress]="item.status === 'IN PROGRESS'" [class.done]="item.status === 'DONE'"
+					[class.first]="item.first" [class.last]="item.last" [style.width.%]="item.percentage"
+					[disabled]="item.count === 0"
+					(click)="filterByStatus(item.status)">
+				</button>
+			}
+		</div>
+		<div class="summary-legend">
+			@for (item of statusSummary(); track item.status) {
+				<span>
+					<span class="summary-marker"
+						[class.todo]="item.status === 'TODO'"
+						[class.in-progress]="item.status === 'IN PROGRESS'"
+						[class.done]="item.status === 'DONE'">
+					</span>
+					{{ item.status }}: {{ item.count }} db ({{ item.percentage | number:'1.0-1' }}%)
+				</span>
+			}
+		</div>
+	</section>
+
+	<div class="create-action">
+		<button type="button" class="create-button" (click)="openTaskDialog()" [disabled]="busy()">
+			<i class="pi pi-plus"></i> Új feladat
+		</button>
+	</div>
+
+	@if (pageError(); as message) {
+		<p class="error">{{ message }}</p>
+	}
+
+	<section class="task-list">
+		<div class="list-heading">
+			<h2 id="tasks-title">
+				Feladatok{{ selectedStatus() ? ' - ' + selectedStatus() : selectedDeadline() === 'soon' ? ' - hamarosan lejár' : selectedDeadline() === 'overdue' ? ' - lejárt' : '' }}
+			</h2>
+			<div class="list-controls">
+				<span>{{ visibleTasks().length }} db</span>
+				@if (selectedStatus() || selectedDeadline()) {
+					<button type="button" class="secondary" (click)="selectedStatus.set(null); selectedDeadline.set(null)">
+						Összes feladat
+					</button>
+				}
+			</div>
+		</div>
+		<div class="task-items">
+			@if (tasks().length === 0) {
+				<div class="empty">Még nincs feladat. Adj hozzá egyet az Új feladat gombbal!</div>
+			} @else if (visibleTasks().length === 0) {
+				<div class="empty">
+					{{ selectedDeadline() ? 'Nincs ilyen határidejű feladat.' : 'Nincs ilyen státuszú feladat.' }}
+				</div>
+			}
+			@for (task of visibleTasks(); track task.id) {
+			<article class="task">
+				<div class="task-header"
+					[class.task-todo]="task.status === 'TODO'"
+					[class.task-in-progress]="task.status === 'IN PROGRESS'"
+					[class.task-done]="task.status === 'DONE'">
+					<h3>{{ task.title }}</h3>
+					<span class="task-status">{{ task.status }}</span>
+				</div>
+				<div class="task-body">
+					<div class="task-content">
+						<p>{{ task?.description }}</p> 
+						@if (task.dueAt) {
+								<p class="task-deadline">
+									Határidő: <time [attr.datetime]="task.dueAt">{{ displayDeadline(task.dueAt)}}</time>
+								</p>
+							@let warning = deadlineState(task.dueAt, task.status, now());
+							@if (warning === 'soon') {
+								<span class="deadline-badge soon"><i class="pi pi-clock"></i> Hamarosan lejár</span>
+							} @else if (warning === 'overdue') {
+								<span class="deadline-badge overdue"><i class="pi pi-exclamation-triangle"></i>Lejárt</span>
+							}
+						}
+					</div>
+					<div class="task-actions">
+						<button class="secondary" type="button" (click)="openTaskDialog(task)"
+							[disabled]="busy()">Szerkesztés</button>
+						<button class="delete" type="button" (click)="remove(task)"
+							[disabled]="busy()">Törlés</button>
+					</div>
+				</div>
+			</article>
+			}
+		</div>
+	</section>
+</div>
